@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./uploads:/app/uploads
+      - ./videos:/app/videos
+      - ./logs:/app/logs
+      - ./templates:/app/templates
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: celery -A app.services.celery worker --loglevel=info
+    volumes:
+      - ./app:/app/app
+      - ./uploads:/app/uploads
+      - ./videos:/app/videos
+      - ./logs:/app/logs
+      - ./templates:/app/templates
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: "redis:alpine"
+    restart: always
+
