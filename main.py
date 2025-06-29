@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
 
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
@@ -11,6 +12,14 @@ from app.utils import get_settings, logger
 
 app = FastAPI()
 settings = get_settings()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # или ["*"] для всех
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @asynccontextmanager
@@ -26,7 +35,8 @@ async def startup():
             Session.status != SessionStatus.FAILED
         ).all()
 
-        logger.info(f"Found {len(pending_sessions)} pending sessions to recover")
+        logger.info(
+            f"Found {len(pending_sessions)} pending sessions to recover")
 
         for session in pending_sessions:
             logger.info(f"Restarting processing for session {session.id}")
