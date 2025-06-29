@@ -69,7 +69,6 @@ async def upload_image(
         # background_tasks.add_task(generate_content_flow.delay, session_id)
         generate_content_flow(session_id)
         logger.info(f"Upload completed for session {session_id}")
-
         return UploadResponse(session_id=session_id)
     except Exception as e:
         logger.error(f"Upload failed for session {session_id}: {str(e)}")
@@ -97,9 +96,15 @@ async def get_video(session_id: str):
                 session.video_path = video_url
                 session.status = SessionStatus.COMPLETED
                 db.commit()
-            return {"url": video_url}
+            return {
+                "status": session.status,
+                "url": video_url
+            }
         else:
-            return {"status": session.status}
+            return {
+                "status": session.status,
+                "url": ""
+            }
     finally:
         db.close()
 
